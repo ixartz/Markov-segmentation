@@ -8,7 +8,7 @@
 
 #include "simulated-annealing.h"
 
-void simulated_annealing(cv::Mat img)
+void simulated_annealing(cv::Mat& img)
 {
     std::mt19937 eng_(time(NULL));
     std::uniform_real_distribution<uint32_t> ureal_dist_;

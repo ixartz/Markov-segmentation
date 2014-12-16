@@ -12,6 +12,6 @@
 #include <random>
 #include <opencv2/opencv.hpp>
 
-void simulated_annealing(cv::Mat img);
+void simulated_annealing(cv::Mat& img);
 
 #endif /* defined(__markov__simulated_annealing__) */
