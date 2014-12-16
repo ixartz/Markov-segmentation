@@ -11,6 +11,7 @@
 
 #include <random>
 #include <opencv2/opencv.hpp>
+#include "config.h"
 
 void random_image(cv::Mat img);
 
