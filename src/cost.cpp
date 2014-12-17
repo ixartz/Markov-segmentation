@@ -8,62 +8,83 @@
 
 #include "cost.h"
 
-void Cost::mean_std(cv::Mat& prob)
+void Cost::mean_std(cv::Mat& img, cv::Mat& prob)
 {
+    double sum[5];
+    double sum2[5];
     double count[5];
 
-    for (int k = 0; k < 5; ++k)
-        count[k] = 0.;
-
-    for (int i = 0; i < prob.rows; ++i)
+    for (int k = 0; k < 3; ++k)
     {
-        for (int j = 0; j < prob.cols; ++j)
+        for (int l = 0; l < 5; ++l)
         {
-            count[prob.at<uchar>(i, j)] += 1;
+            sum[l] = 0.;
+            sum2[l] = 0.;
+            count[l] = 0.;
         }
-    }
 
-    for (int k = 0; k < 5; ++k)
-    {
-        mean_[k] = count[k] / (prob.rows * prob.cols);
-        std_[k] = sqrt(count[k] / (prob.rows * prob.cols) -
-                       mean_[k] * mean_[k]);
+        for (int i = 0; i < img.rows; ++i)
+        {
+            for (int j = 0; j < img.cols; ++j)
+            {
+                sum[prob.at<uchar>(i, j)] += img.at<cv::Vec3b>(i, j)[k];
+                sum2[prob.at<uchar>(i, j)] += img.at<cv::Vec3b>(i, j)[k] *
+                                              img.at<cv::Vec3b>(i, j)[k];
+
+                count[prob.at<uchar>(i, j)] += 1;
+            }
+        }
+
+        for (int l = 0; l < 5; ++l)
+        {
+            mean_[k][l] = sum[l] / count[l];
+            std_[k][l] = sqrt(sum2[l] / count[l] - mean_[k][l] * mean_[k][l]);
+        }
     }
 }
 
-double Cost::c2_test(cv::Mat& prob, int i, int j, int classe)
+double Cost::c2_test(cv::Mat& img, int i, int j, int classe)
 {
-    if (prob.at<uchar>(i, j) == classe)
+    if (img.at<cv::Vec3b>(i, j) == Config::colors[classe])
         return - Config::beta;
     else
         return Config::beta;
 }
 
-double Cost::c2_potts(cv::Mat& prob, int i, int j, int classe)
+double Cost::c2_potts(cv::Mat& img, int i, int j, int classe)
 {
     double cost = 0.;
 
     if (i > 0)
-        cost += c2_test(prob, i - 1, j, classe);
+        cost += c2_test(img, i - 1, j, classe);
 
-    if (i < prob.rows - 1)
-        cost += c2_test(prob, i + 1, j, classe);
+    if (i < img.rows - 1)
+        cost += c2_test(img, i + 1, j, classe);
 
     if (j > 0)
-        cost += c2_test(prob, i, j - 1, classe);
+        cost += c2_test(img, i, j - 1, classe);
 
-    if (j < prob.cols - 1)
-        cost += c2_test(prob, i, j + 1, classe);
+    if (j < img.cols - 1)
+        cost += c2_test(img, i, j + 1, classe);
 
     return cost;
 }
 
-double Cost::c1(int i, int j, int classe)
+double Cost::c1(cv::Mat& img, int i, int j, int classe)
 {
+    double cost = 0.;
 
+    for (int k = 0; k < 3; ++k)
+    {
+        cost += pow(img.at<cv::Vec3b>(i, j)[k] - mean_[k][classe], 2) /
+                2 * pow(std_[k][classe], 2) +
+                log(sqrt(2 * M_PI) * std_[k][classe]);
+    }
+
+    return cost;
 }
 
-double Cost::compute(cv::Mat& prob, int i, int j, int classe)
+double Cost::compute(cv::Mat& img, int i, int j, int classe)
 {
-    return c1(i, j, classe) + c2_potts(prob, i, j, classe);
+    return c1(img, i, j, classe) - c2_potts(img, i, j, classe);
 }
