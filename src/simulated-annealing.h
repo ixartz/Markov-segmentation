@@ -11,6 +11,9 @@
 
 #include <random>
 #include <opencv2/opencv.hpp>
+#include "random.h"
+#include "convert.h"
+#include "cost.h"
 
 void simulated_annealing(cv::Mat& img);
 
