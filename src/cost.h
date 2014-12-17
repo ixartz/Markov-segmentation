@@ -12,9 +12,18 @@
 #include <opencv2/opencv.hpp>
 #include "config.h"
 
-float c2_test(cv::Mat& img, int i, int j, cv::Vec3b& classe);
-float c2_potts(cv::Mat& img, int i, int j, cv::Vec3b& classe);
-float c1(int i, int j, cv::Vec3b& classe);
-float cost(cv::Mat& img, int i, int j, cv::Vec3b& classe);
+class Cost
+{
+public:
+    void mean_std(cv::Mat& prob);
+    double c2_test(cv::Mat& prob, int i, int j, int classe);
+    double c2_potts(cv::Mat& prob, int i, int j, int classe);
+    double c1(int i, int j, int classe);
+    double compute(cv::Mat& prob, int i, int j, int classe);
+
+private:
+    double mean_[5];
+    double std_[5];
+};
 
 #endif /* defined(__markov__cost__) */

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 #include "random.h"
+#include "convert.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,9 +13,11 @@ int main(int argc, char* argv[])
     }
 
     cv::Mat img = cv::imread(argv[1]);
+    cv::Mat prob(img.size(), CV_8UC1, cv::Scalar(255));
     cv::Mat output(img.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
-    random_image(output);
+    random_image(prob);
+    convert(prob, output);
 
     cv::imshow("Display image", output);
 
