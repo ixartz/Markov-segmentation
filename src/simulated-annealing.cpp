@@ -26,6 +26,12 @@ void simulated_annealing(cv::Mat& img)
     random_image(prob);
     convert(prob, output);
 
+    cv::imshow("Display image", output);
+    cv::waitKey(0);
+
+    c.mean_std();
+
+    /*
     do
     {
         cv::imshow("Display image", output);
@@ -59,4 +65,5 @@ void simulated_annealing(cv::Mat& img)
         temperature *= 0.95;
     }
     while (delta_global_enery > 10);
+    */
 }

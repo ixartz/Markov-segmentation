@@ -8,37 +8,24 @@
 
 #include "cost.h"
 
-void Cost::mean_std(cv::Mat& img, cv::Mat& prob)
+void Cost::mean_std()
 {
-    double sum[5];
-    double sum2[5];
-    double count[5];
+    cv::Mat image;
+    boost::filesystem::directory_iterator end;
 
-    for (int k = 0; k < 3; ++k)
+    std::string input_dir(std::string(PROJECT_SRC_DIR) + "/classe");
+
+    if (boost::filesystem::exists(input_dir)
+        && boost::filesystem::is_directory(input_dir))
     {
-        for (int l = 0; l < 5; ++l)
+        for (boost::filesystem::directory_iterator it(input_dir);
+             it != end; ++it)
         {
-            sum[l] = 0.;
-            sum2[l] = 0.;
-            count[l] = 0.;
-        }
-
-        for (int i = 0; i < img.rows; ++i)
-        {
-            for (int j = 0; j < img.cols; ++j)
+            if (it->path().extension() == ".png")
             {
-                sum[prob.at<uchar>(i, j)] += img.at<cv::Vec3b>(i, j)[k];
-                sum2[prob.at<uchar>(i, j)] += img.at<cv::Vec3b>(i, j)[k] *
-                                              img.at<cv::Vec3b>(i, j)[k];
-
-                count[prob.at<uchar>(i, j)] += 1;
+                std::cout << it->path().filename() << std::endl;
+                image = cv::imread(it->path().string(), CV_LOAD_IMAGE_COLOR);
             }
-        }
-
-        for (int l = 0; l < 5; ++l)
-        {
-            mean_[k][l] = sum[l] / count[l];
-            std_[k][l] = sqrt(sum2[l] / count[l] - mean_[k][l] * mean_[k][l]);
         }
     }
 }

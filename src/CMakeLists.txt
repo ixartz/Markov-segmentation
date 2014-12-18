@@ -21,11 +21,13 @@ add_dir("." source)
 
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(LAPACK REQUIRED)
 
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+include_directories(${LAPACK_INCLUDE_DIRS})
 
 add_executable(markov ${source})
 
-target_link_libraries(markov ${OpenCV_LIBS}
+target_link_libraries(markov ${OpenCV_LIBS} ${LAPACK_LIBRARIES}
                       ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})

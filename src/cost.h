@@ -11,12 +11,14 @@
 
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include <boost/filesystem.hpp>
+#include "Settings.h"
 #include "config.h"
 
 class Cost
 {
 public:
-    void mean_std(cv::Mat& img, cv::Mat& prob);
+    void mean_std();
     double c2_test(cv::Mat& img, int i, int j, int classe);
     double c2_potts(cv::Mat& img, int i, int j, int classe);
     double c1(cv::Mat& img, int i, int j, int classe);
