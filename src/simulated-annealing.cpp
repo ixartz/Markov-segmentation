@@ -16,7 +16,7 @@ void simulated_annealing(cv::Mat& img)
 
     double delta_global_enery;
     double delta;
-    double temperature = 10000;
+    double temperature = 4.0;
     int new_classe;
     Cost c;
 
@@ -26,19 +26,14 @@ void simulated_annealing(cv::Mat& img)
     random_image(prob);
     convert(prob, output);
 
-    cv::imshow("Display image", output);
-    cv::waitKey(0);
-
     c.mean_std();
 
-    /*
     do
     {
-        cv::imshow("Display image", output);
-        cv::waitKey(0);
+        //cv::imshow("Display image", output);
+        //cv::waitKey(0);
 
         delta_global_enery = 0.;
-        c.mean_std(output, prob);
 
         // k avoids the influence by neighborhood
         for (int k = 0; k < 2; ++k)
@@ -47,23 +42,24 @@ void simulated_annealing(cv::Mat& img)
             {
                 for (int j = k; j < prob.cols; j += 2)
                 {
-                    new_classe = uint_dist(eng) % 5;
-                    delta = c.compute(output, i, j, new_classe) -
-                    c.compute(output, i, j, prob.at<uchar>(i, j));
+                    new_classe = uint_dist(eng) % 7;
+                    delta = c.compute(img, i, j, new_classe, prob) -
+                            c.compute(img, i, j, prob.at<uchar>(i, j), prob);
 
                     if (delta <= 0. ||
                         exp(-delta / temperature) >= ureal_dist(eng))
                     {
                         delta_global_enery += fabs(delta);
                         prob.at<uchar>(i, j) = new_classe;
-                        convert(prob, output);
                     }
                 }
             }
         }
 
+        convert(prob, output);
         temperature *= 0.95;
     }
-    while (delta_global_enery > 10);
-    */
+    while (delta_global_enery > 2.5);
+
+    img = output;
 }

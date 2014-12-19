@@ -15,8 +15,8 @@ class Config
 {
 public:
     // Fond relief, Fond, Batiment, Eau, Noir
-    static cv::Vec3b colors[5];
-    static constexpr double beta = 2.5;
+    static cv::Vec3b colors[7];
+    static constexpr double beta = 0.2;
 };
 
 #endif /* defined(__markov__config__) */

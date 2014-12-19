@@ -8,11 +8,13 @@
 
 #include "config.h"
 
-cv::Vec3b Config::colors[5] =
+cv::Vec3b Config::colors[7] =
 {
-    cv::Vec3b(134, 103, 67),
-    cv::Vec3b(223, 174, 111),
-    cv::Vec3b(201, 69, 54),
+    cv::Vec3b(238, 0, 0),
+    cv::Vec3b(0, 0, 0),
+    cv::Vec3b(127, 127, 127),
+    cv::Vec3b(238, 0, 238),
+    cv::Vec3b(0, 255, 127),
     cv::Vec3b(0, 0, 255),
-    cv::Vec3b(0, 0, 0)
+    cv::Vec3b(36, 127, 255),
 };

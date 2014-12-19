@@ -17,7 +17,7 @@ void random_image(cv::Mat& img)
     {
         for (int j = 0; j < img.cols; ++j)
         {
-            img.at<uchar>(i, j) = uint_dist_(eng_) % 5;
+            img.at<uchar>(i, j) = uint_dist_(eng_) % 7;
         }
     }
 
