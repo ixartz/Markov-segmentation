@@ -11,14 +11,14 @@
 
 #include <opencv2/opencv.hpp>
 
-#define NB_COLORS 7
+#define NB_COLORS 9
 
 class Config
 {
 public:
-    // Eau, fond, fond relief, bat1, bat2, rouge vif, zone
+    // Eau, fond, fond relief, bat1, bat2, rouge vif, zone, texte, trait fin
     static cv::Vec3b colors[NB_COLORS];
-    static constexpr double beta = 0.2;
+    static constexpr double beta = 1.5;
     static constexpr double initial_temperature = 4.0;
     static constexpr double temperature_decrease = 0.95;
     static constexpr double min_change = 2.5;

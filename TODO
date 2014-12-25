@@ -2,4 +2,5 @@
 [X] Implement metropolis
 [X] Implement simulated annealing
 [X] Implement cost function
-[ ] Use Luv instead rgb
+[X] Use Luv instead rgb
+[X] Generate the executable at project root
