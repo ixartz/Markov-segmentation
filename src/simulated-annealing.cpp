@@ -23,6 +23,8 @@ void simulated_annealing(cv::Mat& img)
     cv::Mat prob(img.size(), CV_8UC1, cv::Scalar(255));
     cv::Mat output(img.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
+    cv::cvtColor(img, img, CV_RGB2Luv);
+
     random_image(prob);
     convert(prob, output);
 

@@ -27,7 +27,7 @@ void Cost::compute_mean_variance_(cv::Mat& image, int classe)
         sum = 0;
         sum2 = 0;
 
-        for (int i= 0; i < image.rows; ++i)
+        for (int i = 0; i < image.rows; ++i)
         {
             for (int j = 0; j < image.cols; ++j)
             {
@@ -47,7 +47,7 @@ void Cost::compute_covariance_(cv::Mat& image, int classe)
 {
     double sum[3] = { 0, 0, 0};
 
-    for (int i= 0; i < image.rows; ++i)
+    for (int i = 0; i < image.rows; ++i)
     {
         for (int j = 0; j < image.cols; ++j)
         {
@@ -69,6 +69,19 @@ void Cost::compute_covariance_(cv::Mat& image, int classe)
     covariance_[classe](2, 1) = covariance_[classe](1, 2);
 }
 
+void Cost::fix_singular_(int classe)
+{
+    // Avoid singular matrix (that does not have a matrix inverse)
+    for (arma::uword i = 0; i < covariance_[classe].n_rows; ++i)
+    {
+        for (arma::uword j = 0; j < covariance_[classe].n_cols; ++j)
+        {
+            if (covariance_[classe](i, j) == 0)
+                covariance_[classe](i, j) = 1e-10;
+        }
+    }
+}
+
 void Cost::init()
 {
     cv::Mat image;
@@ -87,10 +100,12 @@ void Cost::init()
             {
                 std::cout << it->path().filename() << std::endl;
                 image = cv::imread(it->path().string(), CV_LOAD_IMAGE_COLOR);
+                cv::cvtColor(image, image, CV_RGB2Luv);
 
                 compute_mean_variance_(image, classe);
                 compute_covariance_(image, classe);
 
+                fix_singular_(classe);
                 inv_covariance_[classe] = arma::inv(covariance_[classe]);
 
                 ++classe;

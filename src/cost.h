@@ -27,6 +27,7 @@ public:
     double compute(cv::Mat& img, int i, int j, int classe, cv::Mat& prob);
 
 private:
+    void fix_singular_(int classe);
     void compute_mean_variance_(cv::Mat& image, int classe);
     void compute_covariance_(cv::Mat& image, int classe);
 
