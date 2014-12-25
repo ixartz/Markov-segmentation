@@ -8,16 +8,73 @@
 
 #include "cost.h"
 
-void Cost::mean_std()
+Cost::Cost()
+{
+    for (int i = 0; i < NB_COLORS; ++i)
+    {
+        covariance_[i].zeros();
+        inv_covariance_[i].zeros();
+    }
+}
+
+void Cost::compute_mean_variance_(cv::Mat& image, int classe)
+{
+    double sum;
+    double sum2;
+
+    for (int k = 0; k < 3; ++k)
+    {
+        sum = 0;
+        sum2 = 0;
+
+        for (int i= 0; i < image.rows; ++i)
+        {
+            for (int j = 0; j < image.cols; ++j)
+            {
+                sum += image.at<cv::Vec3b>(i, j)[k];
+                sum2 += image.at<cv::Vec3b>(i, j)[k] *
+                        image.at<cv::Vec3b>(i, j)[k];
+            }
+        }
+
+        mean_[classe](k) = sum / (image.cols * image.rows);
+        covariance_[classe](k, k) = (sum2 - (sum * sum) / (image.cols * image.rows))
+                                    / (image.cols * image.rows);
+    }
+}
+
+void Cost::compute_covariance_(cv::Mat& image, int classe)
+{
+    double sum[3] = { 0, 0, 0};
+
+    for (int i= 0; i < image.rows; ++i)
+    {
+        for (int j = 0; j < image.cols; ++j)
+        {
+            sum[0] += (image.at<cv::Vec3b>(i, j)[0] - mean_[classe](0)) *
+                      (image.at<cv::Vec3b>(i, j)[1] - mean_[classe](1));
+            sum[1] += (image.at<cv::Vec3b>(i, j)[0] - mean_[classe](0)) *
+                      (image.at<cv::Vec3b>(i, j)[2] - mean_[classe](2));
+            sum[2] += (image.at<cv::Vec3b>(i, j)[1] - mean_[classe](1)) *
+                      (image.at<cv::Vec3b>(i, j)[2] - mean_[classe](2));
+        }
+    }
+
+    covariance_[classe](0, 1) = sum[0] / (image.cols * image.rows);
+    covariance_[classe](0, 2) = sum[1] / (image.cols * image.rows);
+    covariance_[classe](1, 2) = sum[2] / (image.cols * image.rows);
+
+    covariance_[classe](1, 0) = covariance_[classe](0, 1);
+    covariance_[classe](2, 0) = covariance_[classe](0, 2);
+    covariance_[classe](2, 1) = covariance_[classe](1, 2);
+}
+
+void Cost::init()
 {
     cv::Mat image;
     boost::filesystem::directory_iterator end;
 
     std::string input_dir(std::string(PROJECT_SRC_DIR) + "/classe");
-
-    double sum;
-    double sum2;
-    double sum3;
     int classe = 0;
 
     if (boost::filesystem::exists(input_dir)
@@ -31,76 +88,10 @@ void Cost::mean_std()
                 std::cout << it->path().filename() << std::endl;
                 image = cv::imread(it->path().string(), CV_LOAD_IMAGE_COLOR);
 
-                for (int k = 0; k < 3; ++k)
-                {
-                    sum = 0;
-                    sum2 = 0;
+                compute_mean_variance_(image, classe);
+                compute_covariance_(image, classe);
 
-                    for (int i= 0; i < image.rows; ++i)
-                    {
-                        for (int j = 0; j < image.cols; ++j)
-                        {
-                            sum += image.at<cv::Vec3b>(i, j)[k];
-                            sum2 += image.at<cv::Vec3b>(i, j)[k] *
-                                    image.at<cv::Vec3b>(i, j)[k];
-                        }
-                    }
-
-                    mean_[k][classe] = sum / (image.cols * image.rows);
-                    variance_[k][classe] = (sum2 - (sum*sum)/(image.cols * image.rows))/(image.cols * image.rows-1);
-                }
-
-                sum = sum2 = sum3 = 0;
-                for (int i= 0; i < image.rows; ++i)
-                {
-                    for (int j = 0; j < image.cols; ++j)
-                    {
-                        // L-u covariance
-                        sum += (image.at<cv::Vec3b>(i, j)[0]-mean_[0][classe])*(image.at<cv::Vec3b>(i, j)[1]-mean_[1][classe]);
-                        // L-v covariance
-                        sum2 += (image.at<cv::Vec3b>(i, j)[0]-mean_[0][classe])*(image.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]);
-                        // u-v covariance
-                        sum3 += (image.at<cv::Vec3b>(i, j)[1]-mean_[1][classe])*(image.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]);
-                    }
-                }
-
-                covariance_[0][classe] = sum/(image.cols * image.rows);   // L-u covariance
-                covariance_[1][classe] = sum2/(image.cols * image.rows);  // L-v covariance
-                covariance_[2][classe] = sum3/(image.cols * image.rows);  // u-v covariance
-                // Compute elements of inverse covariance matrix
-                // element (1,1)
-                invcov_[0][classe] = variance_[2][classe] * variance_[1][classe] - covariance_[2][classe]*covariance_[2][classe];
-
-                // elements (1,2) and (2,1)
-                invcov_[1][classe] = covariance_[1][classe] * covariance_[2][classe] - variance_[2][classe] * covariance_[0][classe];
-
-                // elements (1,3) and (3,1)
-                invcov_[2][classe] = covariance_[0][classe] * covariance_[2][classe] - variance_[1][classe] * covariance_[1][classe];
-
-                // element (2,2)
-                invcov_[3][classe] = variance_[2][classe] * variance_[0][classe] - covariance_[1][classe] * covariance_[1][classe];
-                
-                // elements (2,3) and (3,2)
-                invcov_[4][classe] = covariance_[0][classe] * covariance_[1][classe] - variance_[0][classe] * covariance_[2][classe];
-                
-                // element (3,3)
-                invcov_[5][classe] = variance_[1][classe] * variance_[0][classe] - covariance_[0][classe] * covariance_[0][classe];
-
-                denom_[classe] =  variance_[0][classe] * variance_[1][classe] * variance_[2][classe] -
-                variance_[2][classe] * covariance_[0][classe] * covariance_[0][classe] -
-                variance_[1][classe] * covariance_[1][classe] * covariance_[1][classe] -
-                variance_[0][classe] * covariance_[2][classe] * covariance_[2][classe] +
-                covariance_[0][classe] * covariance_[1][classe] * covariance_[2][classe] * 2;
-
-                if (denom_[classe] == 0)
-                    denom_[classe] = 1e-10;
-                for (int k=0; k<3; k++)
-                {
-                    if (covariance_[k][classe] == 0)
-                        covariance_[k][classe] = 1e-10;
-                    if (variance_[k][classe] == 0)
-                        variance_[k][classe] = 1e-10;
-                }
+                inv_covariance_[classe] = arma::inv(covariance_[classe]);
 
                 ++classe;
             }
@@ -137,33 +128,16 @@ double Cost::c2_potts(cv::Mat& prob, int i, int j, int classe)
 
 double Cost::c1(cv::Mat& img, int i, int j, int classe)
 {
-    double det;    // determinant of covariance matrix
-    double gauss;  // exponential part of Gaussians
+    arma::vec3 x;
+    x(0) = img.at<cv::Vec3b>(i, j)[0];
+    x(1) = img.at<cv::Vec3b>(i, j)[1];
+    x(2) = img.at<cv::Vec3b>(i, j)[2];
 
-    det = variance_[0][classe]*variance_[1][classe]*variance_[2][classe] +
-    2 * covariance_[0][classe]*covariance_[1][classe]*covariance_[0][classe] -
-    covariance_[0][classe]*covariance_[0][classe]*variance_[2][classe] -
-    covariance_[1][classe]*covariance_[1][classe]*variance_[1][classe] -
-    covariance_[2][classe]*covariance_[2][classe]*variance_[0][classe];
+    arma::vec3 m = (x - mean_[classe]);
+    arma::mat out = trans(m) * inv_covariance_[classe] * m;
 
-    gauss = ((img.at<cv::Vec3b>(i, j)[0]-mean_[0][classe]) * invcov_[0][classe] +
-             (img.at<cv::Vec3b>(i, j)[1]-mean_[1][classe]) * invcov_[1][classe] +
-             (img.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]) * invcov_[2][classe]) * (img.at<cv::Vec3b>(i, j)[0]-mean_[0][classe]) +
-    ((img.at<cv::Vec3b>(i, j)[0]-mean_[0][classe]) * invcov_[1][classe] +
-     (img.at<cv::Vec3b>(i, j)[1]-mean_[1][classe]) * invcov_[3][classe] +
-     (img.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]) * invcov_[4][classe]) * (img.at<cv::Vec3b>(i, j)[1]-mean_[1][classe]) +
-    ((img.at<cv::Vec3b>(i, j)[0]-mean_[0][classe]) * invcov_[2][classe] +
-     (img.at<cv::Vec3b>(i, j)[1]-mean_[1][classe]) * invcov_[4][classe] +
-     (img.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]) * invcov_[5][classe]) * (img.at<cv::Vec3b>(i, j)[2]-mean_[2][classe]);
-
-    if (det==0)
-        det = 1e-10;
-    else if (det<0)
-    {
-        det = -det;
-        //	  return - log(sqrt(2.0*3.141592653589793*det)) + 0.5 * (double)gauss / (double)denom[label];
-    }
-    return log(sqrt(2.0*3.141592653589793*det)) + 0.5 * (double)gauss / (double)denom_[classe];
+    return log(sqrt(2.0 * M_PI * arma::det(covariance_[classe]))) +
+           0.5 * out[0];
 }
 
 double Cost::compute(cv::Mat& img, int i, int j, int classe, cv::Mat& prob)

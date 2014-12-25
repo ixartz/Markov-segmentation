@@ -16,7 +16,7 @@ void simulated_annealing(cv::Mat& img)
 
     double delta_global_enery;
     double delta;
-    double temperature = 4.0;
+    double temperature = Config::initial_temperature;
     int new_classe;
     Cost c;
 
@@ -26,7 +26,7 @@ void simulated_annealing(cv::Mat& img)
     random_image(prob);
     convert(prob, output);
 
-    c.mean_std();
+    c.init();
 
     do
     {
@@ -42,7 +42,7 @@ void simulated_annealing(cv::Mat& img)
             {
                 for (int j = k; j < prob.cols; j += 2)
                 {
-                    new_classe = uint_dist(eng) % 7;
+                    new_classe = uint_dist(eng) % NB_COLORS;
                     delta = c.compute(img, i, j, new_classe, prob) -
                             c.compute(img, i, j, prob.at<uchar>(i, j), prob);
 
@@ -57,9 +57,9 @@ void simulated_annealing(cv::Mat& img)
         }
 
         convert(prob, output);
-        temperature *= 0.95;
+        temperature *= Config::temperature_decrease;
     }
-    while (delta_global_enery > 2.5);
+    while (delta_global_enery > Config::min_change);
 
     img = output;
 }

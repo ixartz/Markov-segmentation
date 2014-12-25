@@ -11,12 +11,17 @@
 
 #include <opencv2/opencv.hpp>
 
+#define NB_COLORS 7
+
 class Config
 {
 public:
-    // Fond relief, Fond, Batiment, Eau, Noir
-    static cv::Vec3b colors[7];
+    // Eau, fond, fond relief, bat1, bat2, rouge vif, zone
+    static cv::Vec3b colors[NB_COLORS];
     static constexpr double beta = 0.2;
+    static constexpr double initial_temperature = 4.0;
+    static constexpr double temperature_decrease = 0.95;
+    static constexpr double min_change = 2.5;
 };
 
 #endif /* defined(__markov__config__) */

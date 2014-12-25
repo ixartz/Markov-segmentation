@@ -1,3 +1,5 @@
 [X] Open an image with OpenCV
-[ ] Implement metropolis
-[ ] Implement simulated annealing
+[X] Implement metropolis
+[X] Implement simulated annealing
+[X] Implement cost function
+[ ] Use Luv instead rgb
