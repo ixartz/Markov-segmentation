@@ -17,6 +17,7 @@ and if this state respects the Metropolis algorithm.
 ### Building
 
 The project uses CMake build system:
+
 1. mkdir build && cd build
 2. cmake .. && make
 
