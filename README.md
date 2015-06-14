@@ -33,3 +33,12 @@ In project root, you can find the generated executable:
 * OpenCV
 * Boost: filesystem
 * Armadillo
+
+### Examples
+
+#### Input
+
+![Input - example](https://raw.githubusercontent.com/ixartz/Markov-segmentation/master/input/1840_paris_crop.png)
+
+#### Output
+![Output - example](http://blog.ixartz.com/wp-content/uploads/output-markov.png)
